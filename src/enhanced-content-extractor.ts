@@ -490,15 +490,14 @@ export class EnhancedContentExtractor {
       }
     });
     
-    // Try to find the main content area first
+    // Try to find the main content area - be more aggressive about selecting specific content
     let mainContent = '';
     
-    // Priority selectors for main content
+    // Priority selectors for main content (ordered by specificity)
     const contentSelectors = [
       'article',
       'main',
       '[role="main"]',
-      '.content',
       '.post-content',
       '.entry-content',
       '.article-content',
@@ -506,28 +505,63 @@ export class EnhancedContentExtractor {
       '.news-content',
       '.main-content',
       '.page-content',
+      '.content',
       '.text-content',
       '.body-content',
       '.copy',
       '.text',
-      '.body'
     ];
     
+    // Try each selector and collect content
+    const contentCandidates: Array<{ selector: string; text: string; length: number }> = [];
+    
     for (const selector of contentSelectors) {
-      const $content = $(selector).first();
+      const $content = $(selector);
       if ($content.length > 0) {
-        mainContent = $content.text().trim();
-        if (mainContent.length > 100) { // Ensure we have substantial content
-          console.log(`[EnhancedContentExtractor] Found content with selector: ${selector} (${mainContent.length} chars)`);
-          break;
-        }
+        // Try each matching element and collect all candidates
+        $content.each(function() {
+          const text = $(this).text().trim();
+          if (text.length > 200) { // Higher threshold to ensure meaningful content
+            contentCandidates.push({
+              selector,
+              text,
+              length: text.length
+            });
+          }
+        });
       }
     }
     
-    // If no main content found, try body content
-    if (!mainContent || mainContent.length < 100) {
-      console.log(`[EnhancedContentExtractor] No main content found, using body content`);
-      mainContent = $('body').text().trim();
+    // Select the best content candidate (longest one from the highest priority selector)
+    if (contentCandidates.length > 0) {
+      // Sort by length descending to get the most substantial content
+      contentCandidates.sort((a, b) => b.length - a.length);
+      mainContent = contentCandidates[0].text;
+      console.log(`[EnhancedContentExtractor] Found content with selector: ${contentCandidates[0].selector} (${mainContent.length} chars)`);
+    }
+    
+    // Only fall back to body if we found absolutely nothing
+    if (!mainContent || mainContent.length < 200) {
+      console.log(`[EnhancedContentExtractor] No main content found with specific selectors, extracting from body`);
+      
+      // Even for body, try to extract meaningful paragraphs only
+      const paragraphs: string[] = [];
+      $('body p').each(function() {
+        const text = $(this).text().trim();
+        // Only include paragraphs with substantial text (filter out boilerplate)
+        if (text.length > 50 && !text.match(/^(copyright|©|privacy|terms|cookie|disclaimer)/i)) {
+          paragraphs.push(text);
+        }
+      });
+      
+      if (paragraphs.length > 0) {
+        mainContent = paragraphs.join('\n\n');
+        console.log(`[EnhancedContentExtractor] Extracted ${paragraphs.length} paragraphs from body (${mainContent.length} chars)`);
+      } else {
+        // Last resort: get all body text
+        mainContent = $('body').text().trim();
+        console.log(`[EnhancedContentExtractor] Using full body text as last resort (${mainContent.length} chars)`);
+      }
     }
     
     // Clean up the text
