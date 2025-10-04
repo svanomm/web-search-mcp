@@ -2,15 +2,22 @@
  * Utility functions for the web search MCP server
  */
 
-// Common English stop words to remove for better LLM processing efficiency
+// Common English stop words to remove for better LLM processing efficiency. Uses NLTK list. https://gist.github.com/sebleier/554280
 const STOP_WORDS = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
-  'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
-  'to', 'was', 'will', 'with', 'the', 'this', 'but', 'they', 'have',
-  'had', 'what', 'when', 'where', 'who', 'which', 'why', 'how',
-  'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other',
-  'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so',
-  'than', 'too', 'very', 'can', 'will', 'just', 'should', 'now'
+  "i", "me", "my", "myself", "we", "our", "ours", "ourselves", 
+  "you", "your", "yours", "yourself", "yourselves", "he", "him", 
+  "his", "himself", "she", "her", "hers", "herself", "it", "its", 
+  "itself", "they", "them", "their", "theirs", "themselves", "what", 
+  "which", "who", "whom", "this", "that", "these", "those", "am", "is", 
+  "are", "was", "were", "be", "been", "being", "have", "has", "had", 
+  "having", "do", "does", "did", "doing", "a", "an", "the", "and", 
+  "but", "if", "or", "because", "as", "until", "while", "of", "at", 
+  "by", "for", "with", "about", "against", "between", "into", "through", 
+  "during", "before", "after", "above", "below", "to", "from", "up", "down", 
+  "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", 
+  "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", 
+  "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", 
+  "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"
 ]);
 
 /**
