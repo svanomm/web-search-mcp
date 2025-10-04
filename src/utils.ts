@@ -2,8 +2,41 @@
  * Utility functions for the web search MCP server
  */
 
+// Common English stop words to remove for better LLM processing efficiency
+const STOP_WORDS = new Set([
+  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
+  'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
+  'to', 'was', 'will', 'with', 'the', 'this', 'but', 'they', 'have',
+  'had', 'what', 'when', 'where', 'who', 'which', 'why', 'how',
+  'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other',
+  'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so',
+  'than', 'too', 'very', 'can', 'will', 'just', 'should', 'now'
+]);
+
+/**
+ * Remove common English stop words from text to reduce word count
+ * while preserving the important content
+ */
+export function removeStopWords(text: string): string {
+  // Split text into words while preserving punctuation context
+  const words = text.split(/\s+/);
+  
+  // Filter out stop words (case-insensitive)
+  const filteredWords = words.filter(word => {
+    // Extract the actual word from potential punctuation
+    const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+    // Keep the word if it's not a stop word or if it's empty (punctuation)
+    return !STOP_WORDS.has(cleanWord) || cleanWord === '';
+  });
+  
+  return filteredWords.join(' ');
+}
+
 export function cleanText(text: string, maxLength: number = 10000): string {
-  return text
+  // First apply stop words removal, then clean whitespace
+  const cleaned = removeStopWords(text);
+  
+  return cleaned
     .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
     .replace(/\n\s*\n/g, '\n') // Replace multiple newlines with single newline
     .trim()
