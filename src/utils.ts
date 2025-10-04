@@ -2,8 +2,48 @@
  * Utility functions for the web search MCP server
  */
 
+// Common English stop words to remove for better LLM processing efficiency. Uses NLTK list. https://gist.github.com/sebleier/554280
+const STOP_WORDS = new Set([
+  "i", "me", "my", "myself", "we", "our", "ours", "ourselves", 
+  "you", "your", "yours", "yourself", "yourselves", "he", "him", 
+  "his", "himself", "she", "her", "hers", "herself", "it", "its", 
+  "itself", "they", "them", "their", "theirs", "themselves", "what", 
+  "which", "who", "whom", "this", "that", "these", "those", "am", "is", 
+  "are", "was", "were", "be", "been", "being", "have", "has", "had", 
+  "having", "do", "does", "did", "doing", "a", "an", "the", "and", 
+  "but", "if", "or", "because", "as", "until", "while", "of", "at", 
+  "by", "for", "with", "about", "against", "between", "into", "through", 
+  "during", "before", "after", "above", "below", "to", "from", "up", "down", 
+  "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", 
+  "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", 
+  "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", 
+  "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"
+]);
+
+/**
+ * Remove common English stop words from text to reduce word count
+ * while preserving the important content
+ */
+export function removeStopWords(text: string): string {
+  // Split text into words while preserving punctuation context
+  const words = text.split(/\s+/);
+  
+  // Filter out stop words (case-insensitive)
+  const filteredWords = words.filter(word => {
+    // Extract the actual word from potential punctuation
+    const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+    // Keep the word if it's not a stop word or if it's empty (punctuation)
+    return !STOP_WORDS.has(cleanWord) || cleanWord === '';
+  });
+  
+  return filteredWords.join(' ');
+}
+
 export function cleanText(text: string, maxLength: number = 10000): string {
-  return text
+  // First apply stop words removal, then clean whitespace
+  const cleaned = removeStopWords(text);
+  
+  return cleaned
     .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
     .replace(/\n\s*\n/g, '\n') // Replace multiple newlines with single newline
     .trim()
