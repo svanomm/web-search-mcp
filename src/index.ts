@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { SearchEngine } from './search-engine.js';
 import { EnhancedContentExtractor } from './enhanced-content-extractor.js';
 import { WebSearchToolInput, WebSearchToolOutput, SearchResult } from './types.js';
-import { isPdfUrl } from './utils.js';
+import { isPdfUrl, removeStopWords } from './utils.js';
 
 class WebSearchMCPServer {
   private server: McpServer;
@@ -209,9 +209,9 @@ class WebSearchMCPServer {
             let responseText = `Search summaries for "${obj.query}" with ${summaryResults.length} results:\n\n`;
             
             summaryResults.forEach((summary, i) => {
-              responseText += `**${i + 1}. ${summary.title}**\n`;
+              responseText += `**${i + 1}. ${removeStopWords(summary.title)}**\n`;
               responseText += `URL: ${summary.url}\n`;
-              responseText += `Description: ${summary.description}\n`;
+              responseText += `Description: ${removeStopWords(summary.description)}\n`;
               responseText += `\n---\n\n`;
             });
 
